@@ -15,3 +15,5 @@ Requirements:
 | Typescript              | typings                   | Unfortunately, the only survivor by [state of js](https://2022.stateofjs.com/en-US/other-tools/#javascript_flavors) |
 | Vite                    | Compiling & bundling code | Basic setup is completely sufficient for the purposes of this assignment                                            |
 | Css modules via PostCSS | write css                 | The easiest way to write native css and rich PostCSS plugins system for standard operations like autoprefix         |
+| API server              | Fastify                   | East to setup and have all what I need out the box                                                                  |
+
