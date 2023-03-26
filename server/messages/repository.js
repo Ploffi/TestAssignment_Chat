@@ -21,14 +21,14 @@ function generateMessages(length) {
                 faker.lorem.paragraphs(2),
             ]),
         }))
-        .sort((a, b) => a.datetime - b.datetime);
+        .sort((a, b) => b.datetime - a.datetime);
 }
 
 export class MessageRepository {
     #messages = [];
 
     constructor() {
-        this.#messages = generateMessages(150);
+        this.#messages = generateMessages(1500);
     }
 
     getMessages(page, pageSize) {

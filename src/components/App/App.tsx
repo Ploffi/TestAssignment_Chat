@@ -1,4 +1,5 @@
 import './App.css';
+import { Messages } from '../Messages/Messages';
 
 function App() {
     return (
@@ -7,8 +8,7 @@ function App() {
                 <h3>Chat test assignment</h3>
             </header>
             <main className="main">
-                <div className="messages">Place for messages</div>
-                <div className="actions">Place for input and submit buttons</div>
+                <Messages />
             </main>
         </div>
     );

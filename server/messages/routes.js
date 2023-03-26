@@ -5,7 +5,7 @@ import { messageRepository } from './repository.js';
  */
 export async function messageRoutes(fastify) {
     fastify.get(
-        '/messages',
+        '/api/messages',
         {
             schema: {
                 querystring: {

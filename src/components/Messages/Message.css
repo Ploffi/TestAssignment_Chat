@@ -1,0 +1,12 @@
+.message {
+    border-radius: 8px;
+    border: solid 1px black;
+    padding: 16px;
+    background-color: aliceblue;
+    display: flex;
+    align-items: baseline;
+}
+
+.messageInfo {
+    margin-right: 8px;
+}

@@ -1,0 +1,15 @@
+.scrollElement {
+    overflow-y: auto;
+    height: 100%;
+    contain: strict;
+    padding: 0 32px;
+}
+
+
+.virtualizeList {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    will-change: transform;
+}
