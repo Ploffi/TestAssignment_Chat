@@ -8,7 +8,7 @@ Requirements:
 4. Virtualization of chat content
 5. Write own mock API server 
 
-[Live stand](/)
+[Live stand](http://51.250.93.153/)
 
 ## Start up
 ```bash

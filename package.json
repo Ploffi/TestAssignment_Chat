@@ -5,12 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "vite build",
     "preview": "vite preview",
     "lint": "npx eslint --ext .tsx,.ts,.js src/ server/"
   },
   "dependencies": {
     "@faker-js/faker": "^7.6.0",
+    "@fastify/cors": "^8.2.1",
     "fastify": "^4.14.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"

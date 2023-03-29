@@ -1,4 +1,5 @@
 import Fastify from 'fastify';
+import cors from '@fastify/cors';
 import { messageRoutes } from './messages/routes.js';
 
 /**
@@ -9,6 +10,10 @@ const fastify = Fastify({
 });
 
 fastify.register(messageRoutes);
+
+await fastify.register(cors, {
+    origin: '*',
+});
 
 fastify.listen({ port: 3000 }, (err, address) => {
     if (err) throw err;

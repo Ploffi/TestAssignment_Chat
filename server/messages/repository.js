@@ -34,7 +34,7 @@ export class MessageRepository {
 
     getMessages(offset, limit) {
         // add delay for more realism
-        return delay(random(100, 700)).then(() => ({
+        return delay(limit === 0 ? 0 : random(100, 700)).then(() => ({
             messages: this.#messages.slice(offset, offset + limit),
             total: this.#messages.length,
         }));

@@ -18,13 +18,8 @@ export async function messageRoutes(fastify) {
                 },
             },
         },
-        async request => {
+        async (request, reply) => {
             return messageRepository.getMessages(request.query.offset, request.query.limit);
         },
     );
-
-    fastify.post('/messages', async request => {
-        const { content, user } = request.body;
-        return messageRepository.addMessage(content, user);
-    });
 }
