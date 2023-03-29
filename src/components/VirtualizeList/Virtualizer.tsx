@@ -132,8 +132,10 @@ export class Virtualizer {
         },
     );
 
+    private scrollAdjustments: number = 0;
     private subscribe() {
         const handler = () => {
+            this.scrollAdjustments = 0;
             const currentOffset = this.scrollableElement.scrollTop;
             if (currentOffset === this.scrollOffset) return;
 
@@ -196,6 +198,16 @@ export class Virtualizer {
         }
 
         if (delta !== 0) {
+            if (this.measuresCache[elementIdx] && this.measuresCache[elementIdx].top < this.scrollOffset) {
+                this.scrollAdjustments += delta;
+
+                const toOffset = this.scrollOffset + this.scrollAdjustments;
+
+                this.scrollableElement.scrollTo({
+                    top: toOffset,
+                });
+            }
+
             this.heights[elementIdx] = currentHeight;
 
             this.startIdxToRecalculate = this.startIdxToRecalculate
