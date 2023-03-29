@@ -1,10 +1,11 @@
+import React from 'react';
 import { IMessage } from '../../models/message';
 
 import './Message.css';
 
 export const MESSAGE_MIN_HEIGHT = 74;
 
-export function Message({ message }: { message: IMessage }) {
+export const Message = React.memo(({ message }: { message: IMessage }) => {
     return (
         <div className="message">
             <div className="messageUser">{message.user.name[0]}</div>
@@ -22,4 +23,4 @@ export function Message({ message }: { message: IMessage }) {
             </div>
         </div>
     );
-}
+});

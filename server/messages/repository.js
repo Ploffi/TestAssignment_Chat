@@ -29,7 +29,7 @@ export class MessageRepository {
     #messages = [];
 
     constructor() {
-        this.#messages = generateMessages(150 * 1000);
+        this.#messages = generateMessages(150);
     }
 
     getMessages(offset, limit) {
