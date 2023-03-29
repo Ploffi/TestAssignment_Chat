@@ -82,7 +82,6 @@ function useMessages() {
 export const MESSAGE_MIN_HEIGHT_WITH_MARGIN = MESSAGE_MIN_HEIGHT + 16;
 
 export function Messages() {
-    const ignoreRef = React.useRef(false);
     const { messages, total, onRangeChange } = useMessages();
 
     const scrollElementRef = useRef<HTMLDivElement>(null);

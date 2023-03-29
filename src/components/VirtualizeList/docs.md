@@ -1,38 +1,43 @@
 # VirtualizeList
 
-Component for render virtualized list with bottom-up direction.  
+The VirtualizeList component is a tool for rendering a virtualized list with a bottom-up direction. This component can
+improve performance and user experience when working with large lists by only rendering a subset of the list items that
+are currently visible on the screen.
 Inspired by [@tanstack/react-virtual](https://tanstack.com/virtual/v3).
 
 ## Algorithm of virtualization
 
-Component require some information about your list:
+The VirtualizeList component requires three pieces of information to function effectively:
 
-1. Minimal height of rendered element
-2. Total amount of elements
-3. Oversize amount - how many elements should render before and after visible range, for improve UX
+The minimum height of the rendered element
+The total number of elements in the list
+The oversize amount, which is the number of elements to render before and after the visible range to improve the user
+experience.
 
-With this information we can calculate estimated total height of scrollable block and estimated measures of every
-element from `0` to `total`.
-When we get a real size of element by `React.ref` to elements indexed DOM node we will re-calculate following measures
-and total height.
-It doesn't support element size changes by the task requirements, but we could improve this part with `ResizeObserver`
-in the future.
+Using this information, the component calculates the estimated total height of the scrollable block and estimated
+measurements of every element from 0 to total. When the component receives the actual size of an element through a
+`React.ref` to the element's indexed DOM node, it recalculates the estimated measurements and total height. However, the
+component does not currently support element size changes because of the task requirements, but this can be improved
+with the
+use of a `ResizeObserver` in the future.
 
-So, step by the step:
+The virtualization algorithm can be broken down into the following steps:
 
-1. Subscribe to the scroll event of scroll element. Start re-calculation on its change
-2. Calculate estimated total size and measures of elements
-3. By current scroll offset calculate range of elements: find first and last elements which should be visible in user
-   display by measured bottom and top borders
-4. Render these range of elements
-5. Measure real size of elements. If it has difference, then re-calculate our measures and total heights
-6. Find new range of visible elements and render them
+1. Subscribe to the scroll event of the scroll element and start re-calculation on its change
+2. Calculate the estimated total size and measurements of elements
+3. Using the current scroll offset, calculate the range of elements that should be visible in the user's display by
+   measuring the bottom and top borders
+4. Render this range of elements
+5. Measure the actual size of elements. If there is a difference between the estimated and actual size, then recalculate
+   the measurements and total height
+6. Find a new range of visible elements and render them.
 
-## Algorithm of scroll to last element
+## Algorithm of the scroll to the last element
 
-For these purpose we require to get information is final element was mounted or some skeleton.
-Before we got all final component mounted component will scroll to the end on every `render` phase:
-1. Render full height container, calculate initial range
-2. Scroll to the end of container, calculate range of a last elements
-3. Until the last elements are rendered scroll to the end of container on every `render`
+To scroll to the last element, the component must first determine whether the last element has been mounted or not. This
+is done by checking the ready flag in the result of the children function. The algorithm for scrolling to the last
+element can be broken down into the following steps:
 
+1. Render a full-height container and calculate an initial range of elements.
+2. Scroll to the end of the container and calculate the range of the last elements.
+3. Until the last elements are rendered, scroll to the end of the container on every render.
