@@ -1,4 +1,5 @@
 import { faker } from '@faker-js/faker';
+import { delay, random } from '../utils.js';
 
 function generateMessages(length) {
     const users = Array.from({ length: 8 }).map(() => ({
@@ -21,22 +22,22 @@ function generateMessages(length) {
                 faker.lorem.paragraphs(2),
             ]),
         }))
-        .sort((a, b) => b.datetime - a.datetime);
+        .sort((a, b) => a.datetime - b.datetime);
 }
 
 export class MessageRepository {
     #messages = [];
 
     constructor() {
-        this.#messages = generateMessages(1500);
+        this.#messages = generateMessages(150 * 1000);
     }
 
-    getMessages(page, pageSize) {
-        const startIdx = (page - 1) * pageSize;
-        return Promise.resolve({
-            messages: this.#messages.slice(startIdx, startIdx + pageSize),
+    getMessages(offset, limit) {
+        // add delay for more realism
+        return delay(random(100, 700)).then(() => ({
+            messages: this.#messages.slice(offset, offset + limit),
             total: this.#messages.length,
-        });
+        }));
     }
 
     addMessage(content, user) {

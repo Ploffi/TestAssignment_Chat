@@ -8,6 +8,14 @@ Requirements:
 4. Virtualization of chat content
 5. Write own mock API server 
 
+[Live stand](/)
+
+## Start up
+```bash
+npm ci
+node ./server & npm run dev
+```
+
 ## Technologies
 | Name                    | Usage                     | Why I chose it                                                                                                      |
 |-------------------------|:--------------------------|---------------------------------------------------------------------------------------------------------------------|
@@ -17,3 +25,6 @@ Requirements:
 | Css modules via PostCSS | write css                 | The easiest way to write native css and rich PostCSS plugins system for standard operations like autoprefix         |
 | API server              | Fastify                   | East to setup and have all what I need out the box                                                                  |
 
+
+## Algorithm of virtualization
+[Documentation of VirtualizeList component](./src/components/VirtualizeList/docs.md)

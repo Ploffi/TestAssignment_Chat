@@ -5,14 +5,22 @@ interface IMessageResponse {
     messages: IMessage[];
 }
 
-export function getMessages(page: number, pageSize: number): Promise<IMessageResponse> {
+function getMessagesInternal(offset: number, limit: number): Promise<IMessageResponse> {
     const params = new URLSearchParams();
-    params.set('page', page.toString());
-    params.set('pageSize', pageSize.toString());
+    params.set('offset', offset.toString());
+    params.set('limit', limit.toString());
 
     return fetch('/api/messages?' + params, {
         headers: {
             'content-type': 'application/json',
         },
     }).then(response => response.json());
+}
+
+export function getMessages(offset: number, limit: number): Promise<IMessage[]> {
+    return getMessagesInternal(offset, limit).then(r => r.messages);
+}
+
+export function getMessagesLength(): Promise<number> {
+    return getMessagesInternal(0, 0).then(r => r.total);
 }

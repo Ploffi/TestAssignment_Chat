@@ -1,46 +1,34 @@
 import { IVirtualizerProps, Virtualizer } from './Virtualizer';
 import { useEffect, useState } from 'react';
+import { useRerender } from '../../utils/useRerender';
 
 export function useVirtualization({
     onChange,
     oversizeAmount,
     minElementHeight,
-    scrollableElement,
+    scrollElement,
     container,
     total,
 }: IVirtualizerProps) {
-    const [_, setState] = useState(0);
+    const rerender = useRerender();
     const [virtualizer, setVirtualizer] = useState<Virtualizer | null>(null);
 
     useEffect(() => {
-        if (!container || !scrollableElement || total === undefined) return;
+        if (!container || !scrollElement || total === undefined) return;
 
         const innerOnChange = (range: [number, number]) => {
-            setState(i => i + 1);
+            rerender();
             onChange(range[0], range[1]);
         };
+
         const virtualizer = new Virtualizer(
-            scrollableElement,
+            scrollElement,
             container,
             innerOnChange,
             oversizeAmount,
             minElementHeight,
             total,
         );
-
-        function scrollToLast() {
-            if (
-                !scrollableElement ||
-                Math.abs(
-                    scrollableElement.scrollTop + scrollableElement.offsetHeight - scrollableElement.scrollHeight,
-                ) < 1
-            )
-                return;
-            scrollableElement.scroll(0, scrollableElement.scrollHeight);
-            requestAnimationFrame(scrollToLast);
-        }
-
-        scrollToLast();
 
         setVirtualizer(virtualizer);
 
@@ -49,10 +37,12 @@ export function useVirtualization({
         };
     }, [container]);
 
+    useEffect(() => {
+        if (!virtualizer) return;
+        virtualizer.didUpdate();
+    });
+
     if (!virtualizer) return null;
 
-    return {
-        refElement: virtualizer.handleCreateElement,
-        getElements: virtualizer.getElements,
-    };
+    return virtualizer;
 }

@@ -1,28 +1,53 @@
 import React from 'react';
-import { memo } from './memoize';
+import { memo } from '../../utils/memoize';
 
 export interface IVirtualizerProps {
     oversizeAmount: number;
     minElementHeight: number;
     onChange: (start: number, end: number) => void;
-    scrollableElement: HTMLElement | null;
+    scrollElement: HTMLElement | null;
     container: HTMLElement | null;
     total: number | undefined;
 }
 
-function findRange(containerTop: number, containerBottom: number, measures: IMeasure[], total: number): IRange {
-    let startIdx = 0;
+function findStartByBinarySearch(measures: IMeasure[], containerTop: number, total: number) {
+    let left = 0;
+    let right = total;
 
-    while (containerTop >= measures[startIdx].bottom) {
-        startIdx++;
+    while (left <= right) {
+        const middle = Math.floor((left + right) / 2);
+        const middleTop = measures[middle].top;
+
+        if (middleTop < containerTop) {
+            left = middle + 1;
+        } else if (middleTop > containerTop) {
+            right = middle - 1;
+        } else {
+            return middle;
+        }
     }
 
+    return left === 0 ? 0 : left - 1;
+}
+
+function findRange(containerTop: number, containerBottom: number, measures: IMeasure[], total: number): IRange {
+    const startIdx = findStartByBinarySearch(measures, containerTop, total);
+
     let endIdx = startIdx;
-    while (endIdx < total && containerBottom >= measures[endIdx].top) {
+    while (endIdx < total - 1 && containerBottom >= measures[endIdx].top) {
         endIdx++;
     }
 
     return [startIdx, endIdx];
+}
+
+function calculateHeight(element: HTMLElement): number {
+    const style = window.getComputedStyle(element);
+    const result = ['height', 'margin-bottom', 'margin-top'].reduce(
+        (acc, key) => parseInt(style[key as any], 10) + acc,
+        0,
+    );
+    return Math.ceil(result);
 }
 
 interface IMeasure {
@@ -55,6 +80,16 @@ export class Virtualizer {
         this.initRange();
     }
 
+    private initRange() {
+        this.totalHeight = this.total * this.minElementHeight;
+        this.container.style.position = 'relative';
+
+        this.heights = Array.from<number>({
+            length: this.total,
+        }).fill(this.minElementHeight);
+        this.calculateMeasures();
+    }
+
     private calculateMeasures(): IMeasure[] {
         const startIdx = this.startIdxToRecalculate === null ? 0 : this.startIdxToRecalculate;
         const measures = this.measuresCache.slice(0, startIdx);
@@ -77,23 +112,17 @@ export class Virtualizer {
     }
 
     private calculateRange(): IRange {
-        return findRange(
+        const [startRange, endRange] = findRange(
             this.scrollOffset,
             this.scrollOffset + this.scrollableElement.offsetHeight,
             this.calculateMeasures(),
             this.total,
         );
-    }
 
-    private initRange() {
-        const estimatedHeight = this.total * this.minElementHeight;
-        this.setTotalHeight(estimatedHeight);
-        this.container.style.position = 'relative';
+        const start = Math.max(startRange - this.oversizeAmount, 0);
+        const end = Math.min(endRange + this.oversizeAmount, this.total - 1);
 
-        this.heights = Array.from<number>({
-            length: this.total,
-        }).fill(this.minElementHeight);
-        this.calculateMeasures();
+        return [start, end];
     }
 
     private memoizedOnChange = memo(
@@ -127,17 +156,19 @@ export class Virtualizer {
         return Number.isNaN(parsed) ? undefined : parsed;
     }
 
-    private calculateHeight(element: HTMLElement): number {
-        const style = window.getComputedStyle(element);
-        const result = ['height', 'margin-bottom', 'margin-top'].reduce(
-            (acc, key) => parseInt(style[key as any], 10) + acc,
-            0,
-        );
-        return Math.ceil(result);
-    }
-
     private notify(range: [number, number]) {
         this.onChange(range);
+    }
+
+    private scrolledToBottom = false;
+
+    didUpdate() {
+        if (this.scrolledToBottom) return;
+        const currentRange = this.calculateRange();
+        if (currentRange.every(i => this.mounted.has(i))) {
+            this.scrolledToBottom = true;
+        }
+        this.scrollableElement.scrollTo(0, this.scrollableElement.scrollHeight);
     }
 
     destroy() {
@@ -146,6 +177,7 @@ export class Virtualizer {
         });
     }
 
+    private mounted = new Set<number>();
     handleCreateElement = (element: HTMLElement | null) => {
         if (!element) return;
 
@@ -155,34 +187,30 @@ export class Virtualizer {
 
         const cachedHeight = this.heights[elementIdx];
 
-        if (cachedHeight) {
-            const currentHeight = this.calculateHeight(element);
+        const currentHeight = calculateHeight(element);
 
-            const delta = currentHeight - cachedHeight;
+        const delta = currentHeight - cachedHeight;
 
-            if (delta !== 0) {
-                this.heights[elementIdx] = currentHeight;
-                this.startIdxToRecalculate = this.startIdxToRecalculate
-                    ? Math.min(this.startIdxToRecalculate, elementIdx)
-                    : elementIdx;
+        if (!this.scrolledToBottom && element.getAttribute('data-virtualized-ready') === 'true') {
+            this.mounted.add(elementIdx);
+        }
 
-                const oldHeight = this.getTotalHeight();
-                this.setTotalHeight(oldHeight + delta);
-                this.memoizedOnChange();
-            }
-        } else {
-            this.heights[elementIdx] = this.calculateHeight(element);
+        if (delta !== 0) {
+            this.heights[elementIdx] = currentHeight;
+
+            this.startIdxToRecalculate = this.startIdxToRecalculate
+                ? Math.min(this.startIdxToRecalculate, elementIdx)
+                : elementIdx;
+
+            this.totalHeight += delta;
             this.memoizedOnChange();
         }
     };
 
     getElements = () => {
-        const [startRange, endRange] = this.calculateRange();
+        const [start, end] = this.calculateRange();
 
-        const start = Math.max(startRange - this.oversizeAmount, 0);
-        const end = Math.min(endRange + this.oversizeAmount, this.total);
-
-        return Array.from({ length: end - start }).map((_, i) => {
+        return Array.from({ length: end - start + 1 }).map((_, i) => {
             const idx = start + i;
             let measure = this.measuresCache[idx];
 
@@ -195,12 +223,9 @@ export class Virtualizer {
         });
     };
 
-    private setTotalHeight(newHeight: number) {
-        this.container.style.minHeight = newHeight + 'px';
-    }
-
+    private totalHeight: number = 0;
     getTotalHeight = () => {
-        return parseInt(this.container.style.minHeight, 10);
+        return this.totalHeight;
     };
 }
 

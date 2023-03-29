@@ -7,10 +7,11 @@ interface IVirtualizeListProps {
     onChange: (start: number, end: number) => void;
     elementClassName?: string;
     total: number | undefined;
-    children: (idx: number) => React.ReactNode;
+    children: (idx: number) => { element: React.ReactNode; ready: boolean };
     getKey: (idx: number) => string | number;
     minElementHeight: number;
     oversizeAmount: number;
+    scrollElementRef: React.RefObject<HTMLDivElement>;
 }
 
 export function VirtualizeList({
@@ -21,24 +22,24 @@ export function VirtualizeList({
     getKey,
     minElementHeight,
     oversizeAmount,
+    scrollElementRef,
 }: IVirtualizeListProps) {
     const containerRef = React.useRef<HTMLDivElement>(null);
-    const scrollableRef = React.useRef<HTMLDivElement>(null);
 
     const virtualizer = useVirtualization({
         onChange: onChange,
         oversizeAmount,
         minElementHeight: minElementHeight,
         container: containerRef.current,
-        scrollableElement: scrollableRef.current,
+        scrollElement: scrollElementRef.current,
         total,
     });
 
     const range = virtualizer ? virtualizer.getElements() : null;
 
     return (
-        <div className="scrollElement" ref={scrollableRef}>
-            <div ref={containerRef}>
+        <div className="scrollElement" ref={scrollElementRef}>
+            <div style={{ height: virtualizer?.getTotalHeight() }} ref={containerRef}>
                 {range && virtualizer ? (
                     <div
                         className="virtualizeList"
@@ -47,14 +48,16 @@ export function VirtualizeList({
                         }}
                     >
                         {range.map(({ idx }) => {
+                            const { ready, element } = children(idx);
                             return (
                                 <div
                                     className={elementClassName}
-                                    ref={virtualizer.refElement}
+                                    ref={virtualizer?.handleCreateElement}
                                     data-virtualized-idx={idx}
+                                    data-virtualized-ready={ready}
                                     key={getKey(idx)}
                                 >
-                                    {children(idx)}
+                                    {element}
                                 </div>
                             );
                         })}

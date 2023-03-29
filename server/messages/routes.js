@@ -11,15 +11,15 @@ export async function messageRoutes(fastify) {
                 querystring: {
                     type: 'object',
                     properties: {
-                        page: { type: 'integer' },
-                        pageSize: { type: 'integer' },
+                        offset: { type: 'integer' },
+                        limit: { type: 'integer' },
                     },
-                    required: ['page', 'pageSize'],
+                    required: ['offset', 'limit'],
                 },
             },
         },
         async request => {
-            return messageRepository.getMessages(request.query.page, request.query.pageSize || 50);
+            return messageRepository.getMessages(request.query.offset, request.query.limit);
         },
     );
 
